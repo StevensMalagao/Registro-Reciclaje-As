@@ -1,3 +1,3 @@
-# Seminario-Asolarte
+# Registro de Reciclaje
 
 Suck it
