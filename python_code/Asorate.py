@@ -13,17 +13,50 @@ import webbrowser
 NOMBRE_ARCHIVO_EXCEL = "Registro.xlsx"
 NOMBRE_BASE_DATOS_RECICLADORES = "Base_datos.xlsx"
 VELOCIDAD_BAUDIOS = 115200
-LOGO_PATH = "logoaso.png"
-LOGO_SIZE = (220, 80)
-REFRESH_ICON_PATH = "refresh_icon.png"
-
+LOGO_PATH = "logoaso2.png"
+LOGO_SIZE = (400, 120)
+REFRESH_ICON_PATH = "refresh_icon2.png"
 MATERIALES_POR_FAMILIA = {
-    "METALES": {"ALUMINIO": 101, "CHATARRA": 102, "COBRE": 103, "BRONCE": 104, "ANTIMONIO": 105, "ACERO": 106, "OTROS METALES": 199},
-    "PAPEL Y CARTÓN": {"ARCHIVO": 201, "CARTON": 202, "CUBETAS O PANELES": 203, "PERIODICO": 204, "PLEGADIZA": 205, "TETRA PACK": 206, "PLASTIFICADO": 207, "KRAF": 208, "OTROS PAPEL Y CARTÓN": 299},
-    "PLÁSTICOS": {"ACRÍLICO": 301, "PASTA": 302, "PET": 303, "PVC": 304, "PLASTICO BLANCO": 305, "POLIETILENO": 306, "SOPLADO": 307, "POLIPROPILENO": 308, "OTROS PLÁSTICOS": 399},
-    "VIDRIO": {"OTROS VIDRIOS": 499},
-    "TEXTIL": {"OTROS TEXTILES": 599},
-    "MADERA": {"OTROS MADERABLES": 699}
+    "Metales": {
+        "Aluminio": 101,
+        "Chatarra": 102,
+        "Cobre": 103,
+        "Bronce": 104,
+        "Antimonio": 105,
+        "Acero": 106,
+        "Otros metales": 199
+    },
+    "Papel y cartón": {
+        "Archivo": 201,
+        "Cartón": 202,
+        "Cubetas o paneles": 203,
+        "Periódico": 204,
+        "Plegadiza": 205,
+        "Tetra pack": 206,
+        "Plastificado": 207,
+        "Kraf": 208,
+        "Otros papel y cartón": 299
+    },
+    "Plásticos": {
+        "Acrílico": 301,
+        "Pasta": 302,
+        "Pet": 303,
+        "Pvc": 304,
+        "Plástico blanco": 305,
+        "Polietileno": 306,
+        "Soplado": 307,
+        "Polipropileno": 308,
+        "Otros plásticos": 399
+    },
+    "Vidrio": {
+        "Otros vidrios": 499
+    },
+    "Textil": {
+        "Otros textiles": 599
+    },
+    "Madera": {
+        "Otros maderables": 699
+    }
 }
 
 PESO_EMPAQUES = {
@@ -33,7 +66,7 @@ PESO_EMPAQUES = {
     "Lona": 2.0
 }
 
-def gestionar_recicladores_excel(operacion, nombre_archivo, nombre_hoja="recicladores"):
+def gestionar_recicladores_excel(operacion, nombre_archivo, nombre_hoja="Recicladores"):
     if not os.path.exists(nombre_archivo):
         try:
             libro = openpyxl.Workbook()
@@ -80,12 +113,33 @@ def agregar_datos_a_excel(nombre_archivo_excel, datos_registro):
     material = datos_registro["material"]
     peso_neto = float(datos_registro["peso_neto"])
 
-    NOMBRE_HOJA = "Datos Agrupados por Dia"
+    meses_es = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
     
-    COL_FECHA_NOMBRE = "Fecha"
-    COL_RECICLADOR_NOMBRE = "Reciclador"
+    try:
+        partes = fecha.split('/')
+        if len(partes) == 3:
+            dia, mes_num, año = partes
+            mes_num_int = int(mes_num)
+            
+            if 1 <= mes_num_int <= 12:
+                nombre_mes = meses_es[mes_num_int - 1]
+                NOMBRE_HOJA = f"{nombre_mes}-{año}"
+            else:
+                raise ValueError("Número de mes fuera de rango")
+        else:
+             raise ValueError("Formato de fecha inesperado")
+    
+    except Exception as e:
+        print(f"Advertencia: No se pudo parsear la fecha '{fecha}' ({e}). Usando hoja 'Datos Generales'.")
+        NOMBRE_HOJA = "Datos Generales"
+    
+    COL_FECHA_NOMBRE = "FECHA"
+    COL_RECICLADOR_NOMBRE = "NOMBRE"
     COL_ID_NOMBRE = "ID"
-    COL_TOTAL_NOMBRE = "Total"
+    COL_TOTAL_NOMBRE = "TOTAL"
     BASE_HEADERS = [COL_FECHA_NOMBRE, COL_RECICLADOR_NOMBRE, COL_ID_NOMBRE, COL_TOTAL_NOMBRE]
 
     try:
@@ -135,7 +189,7 @@ def agregar_datos_a_excel(nombre_archivo_excel, datos_registro):
         target_row_num = -1
         for row_idx in range(2, hoja.max_row + 1):
             if hoja.cell(row=row_idx, column=col_fecha_idx).value == fecha and \
-               hoja.cell(row=row_idx, column=col_reciclador_idx).value == reciclador:
+                hoja.cell(row=row_idx, column=col_reciclador_idx).value == reciclador:
                 target_row_num = row_idx
                 break
         
@@ -149,7 +203,7 @@ def agregar_datos_a_excel(nombre_archivo_excel, datos_registro):
                 if header_name and header_name not in [COL_FECHA_NOMBRE, COL_RECICLADOR_NOMBRE, COL_ID_NOMBRE]:
                     hoja.cell(row=target_row_num, column=idx + 1).value = 0.0
 
-        current_material_val_cell = hoja.cell(row=target_row_num, column=col_material_idx)
+        current_material_val_cell = hoja.cell(row=target_row_num, column=col_material_idx) 
         try:
             current_material_val = float(current_material_val_cell.value or 0.0)
         except ValueError:
@@ -213,7 +267,7 @@ class AplicacionReciclaje(ctk.CTk):
 
         self.title(f"Sistema de Registro Asorate - Conectado a {self.puerto_serial}")
         self.geometry("800x650") 
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.grid_columnconfigure(0, weight=1)
         
         self.fecha_var = ctk.StringVar(value="Esperando...")
@@ -224,7 +278,7 @@ class AplicacionReciclaje(ctk.CTk):
         self.familia_seleccionada = ctk.StringVar(value="Seleccione una familia")
         self.material_seleccionado = ctk.StringVar(value="Seleccione un material")
         self.reciclador_seleccionado = ctk.StringVar(value="Seleccione un reciclador")
-        self.novedad_var = ctk.StringVar()
+        
 
         self.refresh_icon = None
         if os.path.exists(REFRESH_ICON_PATH):
@@ -233,7 +287,7 @@ class AplicacionReciclaje(ctk.CTk):
             except Exception as e:
                 print(f"Error al cargar el icono de refrescar: {e}")
         else:
-            print(f"Advertencia (AplicacionReciclaje): No se encontró el icono '{REFRESH_ICON_PATH}'. Se usará texto.")
+             print(f"Advertencia (AplicacionReciclaje): No se encontró el icono '{REFRESH_ICON_PATH}'. Se usará texto.")
 
         self.create_widgets(lista_nombres_recicladores)
         self.iniciar_lectura_serial()
@@ -260,7 +314,7 @@ class AplicacionReciclaje(ctk.CTk):
         ctk.CTkLabel(data_frame, textvariable=self.peso_neto_var).grid(row=4, column=1, padx=10, pady=10, sticky="w")
 
         input_frame = ctk.CTkFrame(self)
-        input_frame.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
+        input_frame.grid(row=2, column=0, padx=20, pady=25, sticky="nsew")
         input_frame.grid_columnconfigure((1, 3), weight=1)
 
         ctk.CTkLabel(input_frame, text="Familia de Material:").grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -268,8 +322,8 @@ class AplicacionReciclaje(ctk.CTk):
         ctk.CTkLabel(input_frame, text="Material:").grid(row=1, column=0, padx=10, pady=10, sticky="w")
         self.material_menu = ctk.CTkComboBox(input_frame, variable=self.material_seleccionado, values=[], state="disabled")
         self.material_menu.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
-        ctk.CTkLabel(input_frame, text="Tipo de Empaque:").grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        ctk.CTkComboBox(input_frame, variable=self.empaque_seleccionado, values=list(PESO_EMPAQUES.keys()), state="readonly", command=self.actualizar_pesos).grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+        ctk.CTkLabel(input_frame, text="Tipo de Empaque:").grid(row=1, column=2, padx=10, pady=10, sticky="w")
+        ctk.CTkComboBox(input_frame, variable=self.empaque_seleccionado, values=list(PESO_EMPAQUES.keys()), state="readonly", command=self.actualizar_pesos).grid(row=1, column=3, padx=10, pady=10, sticky="ew")
 
         ctk.CTkLabel(input_frame, text="Reciclador:").grid(row=0, column=2, padx=(20, 10), pady=10, sticky="w")
         reciclador_frame = ctk.CTkFrame(input_frame, fg_color="transparent")
@@ -288,16 +342,14 @@ class AplicacionReciclaje(ctk.CTk):
             image=self.refresh_icon, 
             width=refresh_width,
             command=self.actualizar_dropdown_recicladores,
-            fg_color="gray", 
+            fg_color="gray",
             hover_color="darkgray"
         ).grid(row=0, column=1, padx=(10,0))
         
-        ctk.CTkLabel(input_frame, text="Novedad:").grid(row=1, column=2, padx=(20, 10), pady=10, sticky="w")
-        ctk.CTkEntry(input_frame, textvariable=self.novedad_var).grid(row=1, column=3, rowspan=2, padx=10, pady=10, sticky="nsew")
-
-        ctk.CTkButton(self, text="Registrar Reciclaje", command=self.guardar_datos_gui, font=ctk.CTkFont(weight="bold"), height=40).grid(row=3, column=0, padx=20, pady=(10, 5), sticky="ew")
-        ctk.CTkButton(self, text="Abrir Archivo de Registros", command=self.abrir_excel_registros, height=40, fg_color="#555555", hover_color="#444444").grid(row=4, column=0, padx=20, pady=(5, 5), sticky="ew")
-        ctk.CTkButton(self, text="Modificar DB Recicladores", command=self.abrir_excel_base_de_datos, height=40, fg_color="#555555", hover_color="#444444").grid(row=5, column=0, padx=20, pady=(5, 20), sticky="ew")
+    
+        ctk.CTkButton(self, text="Registrar Reciclaje", command=self.guardar_datos_gui, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#4EB9D7", hover_color="#357D92").grid(row=3, column=0, padx=20, pady=(10, 5), sticky="ew")
+        ctk.CTkButton(self, text="Abrir Archivo de Registros", command=self.abrir_excel_registros, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#4ED761", hover_color="#3BA249").grid(row=4, column=0, padx=20, pady=(5, 5), sticky="ew")
+        ctk.CTkButton(self, text="Modificar Base de Datos", command=self.abrir_excel_base_de_datos, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#46bb58", hover_color="#3BA249").grid(row=5, column=0, padx=20, pady=(5, 20), sticky="ew")
 
     def abrir_excel_base_de_datos(self):
         gestionar_recicladores_excel("leer", NOMBRE_BASE_DATOS_RECICLADORES)
@@ -371,10 +423,10 @@ class AplicacionReciclaje(ctk.CTk):
             "tara": PESO_EMPAQUES.get(self.empaque_seleccionado.get(), 0.0),
             "peso_neto": float(peso_neto_str),
             "familia": self.familia_seleccionada.get(),
-            "material": self.material_seleccionado.get(),
-            "reciclador": nombre_reciclador,
+            "material": self.material_seleccionado.get().upper(),
+            "reciclador": nombre_reciclador.upper(),
             "reciclador_id": reciclador_id,
-            "novedad": self.novedad_var.get() or "N/A"
+            
         }
         
         if any(v in ("Esperando...", "N/A") for v in (datos["fecha"],)) or any("Seleccione" in v or "Error" in v or "vacía" in v for v in (datos["familia"], datos["material"], datos["reciclador"])):
@@ -389,7 +441,7 @@ class AplicacionReciclaje(ctk.CTk):
             print("Error al guardar. El messagebox de error debe haberse mostrado.")
 
     def reset_fields(self):
-        self.novedad_var.set("")
+        
         self.familia_seleccionada.set("Seleccione una familia")
         self.material_menu.configure(values=[], state="disabled")
         self.material_seleccionado.set("Seleccione un material")
@@ -421,7 +473,7 @@ class VentanaSeleccionCOM(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Asorate - Conectar Dispositivo")
-        self.geometry("400x180")
+        self.geometry("300x180")
         self.resizable(False, False)
         self.grid_columnconfigure(0, weight=1)
 
@@ -460,7 +512,7 @@ class VentanaSeleccionCOM(ctk.CTk):
         
         self.refrescar_puertos()
 
-        ctk.CTkButton(self, text="Conectar", command=self.iniciar_app_principal, height=35).pack(padx=20, pady=(10,20), fill="x", expand=True)
+        ctk.CTkButton(self, text="Conectar", command=self.iniciar_app_principal, height=35, fg_color="#4EB9D7", hover_color="#357D92").pack(padx=20, pady=(10,20), fill="x", expand=True)
 
     def refrescar_puertos(self):
         puertos = [port.device for port in serial.tools.list_ports.comports()]
