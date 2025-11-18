@@ -16,6 +16,7 @@ VELOCIDAD_BAUDIOS = 115200
 LOGO_PATH = "logoaso2.png"
 LOGO_SIZE = (400, 120)
 REFRESH_ICON_PATH = "refresh_icon2.png"
+
 MATERIALES_POR_FAMILIA = {
     "Metales": {
         "Aluminio": 101,
@@ -40,8 +41,8 @@ MATERIALES_POR_FAMILIA = {
     "Plásticos": {
         "Acrílico": 301,
         "Pasta": 302,
-        "Pet": 303,
-        "Pvc": 304,
+        "PET": 303,
+        "PVC": 304,
         "Plástico blanco": 305,
         "Polietileno": 306,
         "Soplado": 307,
@@ -189,7 +190,7 @@ def agregar_datos_a_excel(nombre_archivo_excel, datos_registro):
         target_row_num = -1
         for row_idx in range(2, hoja.max_row + 1):
             if hoja.cell(row=row_idx, column=col_fecha_idx).value == fecha and \
-                hoja.cell(row=row_idx, column=col_reciclador_idx).value == reciclador:
+               hoja.cell(row=row_idx, column=col_reciclador_idx).value == reciclador:
                 target_row_num = row_idx
                 break
         
@@ -279,7 +280,6 @@ class AplicacionReciclaje(ctk.CTk):
         self.material_seleccionado = ctk.StringVar(value="Seleccione un material")
         self.reciclador_seleccionado = ctk.StringVar(value="Seleccione un reciclador")
         
-
         self.refresh_icon = None
         if os.path.exists(REFRESH_ICON_PATH):
             try:
@@ -342,11 +342,10 @@ class AplicacionReciclaje(ctk.CTk):
             image=self.refresh_icon, 
             width=refresh_width,
             command=self.actualizar_dropdown_recicladores,
-            fg_color="gray",
+            fg_color="gray", 
             hover_color="darkgray"
         ).grid(row=0, column=1, padx=(10,0))
         
-    
         ctk.CTkButton(self, text="Registrar Reciclaje", command=self.guardar_datos_gui, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#4EB9D7", hover_color="#357D92").grid(row=3, column=0, padx=20, pady=(10, 5), sticky="ew")
         ctk.CTkButton(self, text="Abrir Archivo de Registros", command=self.abrir_excel_registros, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#4ED761", hover_color="#3BA249").grid(row=4, column=0, padx=20, pady=(5, 5), sticky="ew")
         ctk.CTkButton(self, text="Modificar Base de Datos", command=self.abrir_excel_base_de_datos, font=ctk.CTkFont(weight="bold"), height=40, fg_color="#46bb58", hover_color="#3BA249").grid(row=5, column=0, padx=20, pady=(5, 20), sticky="ew")
@@ -425,7 +424,7 @@ class AplicacionReciclaje(ctk.CTk):
             "familia": self.familia_seleccionada.get(),
             "material": self.material_seleccionado.get().upper(),
             "reciclador": nombre_reciclador.upper(),
-            "reciclador_id": reciclador_id,
+            "reciclador_id": reciclador_id, 
             
         }
         
